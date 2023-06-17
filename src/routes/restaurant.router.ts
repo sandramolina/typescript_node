@@ -113,5 +113,8 @@ restaurantsRouter.delete('/:id', async (req: Request, res: Response) => {
     } else if (!result.deletedCount) {
       res.status(404).send(`Resto with id ${id} not found`);
     }
-  } catch (error) {}
+  } catch (error) {
+    console.error(error.message);
+    res.status(400).send(error.message);
+  }
 });
