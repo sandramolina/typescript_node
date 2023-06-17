@@ -8,7 +8,7 @@ const port = 8080; // default port to listen
 connectToDatabase()
   .then(() => {
     // send all calls to /restaurants to our restaurantsRouter
-    app.use('/', restaurantsRouter);
+    app.use('/restaurants', restaurantsRouter);
 
     // start the Express server
     app.listen(port, () => {
