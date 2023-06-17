@@ -8,8 +8,27 @@ export const restaurantsRouter = express.Router();
 
 restaurantsRouter.use(express.json());
 
+// GET only the first 20 restaurants
+// When making a request giving a page number: http://localhost:8080/restaurants/?page=4
+//TODO: How to use number on the page constant?
+restaurantsRouter.get('/', async (req: Request, res: Response) => {
+  try {
+    const page: any = req.query.page || 0;
+    const restosPerPage: number = 20;
+    const toSkip: number = page * restosPerPage;
+    const restaurants = await collections.restaurants
+      .find({})
+      .skip(toSkip)
+      .limit(restosPerPage)
+      .toArray();
+    res.status(200).send(restaurants);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
 // GET all restaurants. Example: http://localhost:8080/restaurants
-restaurantsRouter.get('/', async (_req: Request, res: Response) => {
+restaurantsRouter.get('/all', async (_req: Request, res: Response) => {
   try {
     const restaurants = await collections.restaurants.find({}).toArray();
     res.status(200).send(restaurants);
