@@ -1,5 +1,5 @@
 // External Dependencies
-import express, { Request, Response } from 'express';
+import express, { Request, Response, query } from 'express';
 import { ObjectId } from 'mongodb';
 import { collections } from '../services/database.service';
 
@@ -31,6 +31,7 @@ restaurantsRouter.get('/:id', async (req: Request, res: Response) => {
     }
   } catch (error) {
     res
+      //404 Not Found
       .status(404)
       .send(`Unable to find matching document with id: ${req.params.id}`);
   }
@@ -43,14 +44,55 @@ restaurantsRouter.post('/', async (req: Request, res: Response) => {
     const result = await collections.restaurants.insertOne(newRestaurant);
 
     result
-      ? res.status(201).send(`Suscesfully added ${result.insertedId}`)
-      : res.status(500).send(`Failed to create a new resto`);
+      ? // 201 Created
+        res.status(201).send(`Suscesfully added ${result.insertedId}`)
+      : // 500 Internal Server Error
+        res.status(500).send(`Failed to create a new resto`);
   } catch (error) {
     console.error(error);
+    // 400 Bad Request
     res.status(400).send(error.message);
   }
 });
 
-// PUT
+// PUT -> This will only modify the fields that we change
+restaurantsRouter.put('/:id', async (req: Request, res: Response) => {
+  const id = req?.params?.id;
+
+  try {
+    const updatedResto = req.body;
+    const query = { _id: new ObjectId(id) };
+    // $set adds or updates all fields
+    const result = await collections.restaurants.updateOne(query, {
+      $set: updatedResto,
+    });
+
+    result
+      ? // 200 OK The resource has been fetched and is transmitted in the message body.
+        res.status(200).send(`Suscessfully updated resto id ${id}`)
+      : // 304 Not Modified
+        res.status(304).send(`Resto with id ${id} not updated`);
+  } catch (error) {
+    console.error(error);
+    // 400 Bad Request
+    res.status(400).send(error.message);
+  }
+});
 
 // DELETE
+restaurantsRouter.delete('/:id', async (req: Request, res: Response) => {
+  const id = req?.params?.id;
+
+  try {
+    const query = { _id: new ObjectId(id) };
+    const result = await collections.restaurants.deleteOne(query);
+
+    if (result && result.deletedCount) {
+      res.status(200).send(`Suscesfully removed resto with id ${id}`);
+    } else if (!result) {
+      res.status(400).send(`Failed to remove game with id ${id}`);
+    } else if (!result.deletedCount) {
+      res.status(404).send(`Resto with id ${id} not found`);
+    }
+  } catch (error) {}
+});
