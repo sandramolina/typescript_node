@@ -37,6 +37,19 @@ restaurantsRouter.get('/:id', async (req: Request, res: Response) => {
 });
 
 // POST
+restaurantsRouter.post('/', async (req: Request, res: Response) => {
+  try {
+    const newRestaurant = req.body;
+    const result = await collections.restaurants.insertOne(newRestaurant);
+
+    result
+      ? res.status(201).send(`Suscesfully added ${result.insertedId}`)
+      : res.status(500).send(`Failed to create a new resto`);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send(error.message);
+  }
+});
 
 // PUT
 
